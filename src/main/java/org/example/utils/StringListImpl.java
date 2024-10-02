@@ -5,16 +5,18 @@ import org.example.exceptions.IllegalArgumentException;
 import org.example.exceptions.OutOfRangeException;
 import org.example.exceptions.MissingElementException;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class StringListImpl implements StringList {
 
     private String[] stringArray;
 
-    private int size = 0;
+    private int size;
 
     public StringListImpl(int capacity) {
         stringArray = new String[capacity];
+        size = 0;
     }
 
     @Override
@@ -61,7 +63,9 @@ public class StringListImpl implements StringList {
             throw new IllegalArgumentException("Нельзя добавить null");
         }
 
-        return stringArray[index] = item;
+        String oldItem = stringArray[index];
+        stringArray[index] = item;
+        return oldItem;
     }
 
     @Override
@@ -70,106 +74,108 @@ public class StringListImpl implements StringList {
             throw new IllegalArgumentException("Нельзя добавить null");
         }
 
-        boolean isFind = false;
-        int elementIndex = 0;
-        for(int i = 0; i < size; i++){
-            if(stringArray[i] == item){
-                stringArray[i] = null;
-                isFind = true;
-                elementIndex = i;
-                break;
-            }
-        }
-
-        if(!isFind){
+        int index = indexOf(item);
+        if (index == -1) {
             throw new MissingElementException("Такого элемента нет");
         }
-
-        for(int i = size; i > elementIndex; i--){
-            stringArray[i] = stringArray[i-1];
-        }
-        size--;
-        return item;
+        return remove(index);
     }
 
     @Override
     public String remove(int index) {
-        if (index > stringArray.length) {
-            throw new OutOfRangeException("Выход за пределы массива");
+        if (index < 0 || index >= size) {
+            throw new OutOfRangeException("Индекс вне диапазона");
         }
-        return stringArray[index] = null;
+
+        String removedItem = stringArray[index];
+        for (int i = size; i > index; i--) {
+            stringArray[i] = stringArray[i - 1];
+        }
+        size--;
+        stringArray[size] = null;
+        return removedItem;
     }
 
     @Override
     public boolean contains(String item) {
-        boolean isFind = false;
-        for(int i = 0; i < size; i++){
-            if(stringArray[i] == item){
-                isFind = true;
-            }
-        }
-        return isFind;
+        return indexOf(item) != -1;
     }
 
     @Override
     public int indexOf(String item) {
-        int index = -1;
-        for (int i = 0; i < stringArray.length; i++) {
-            if (Objects.equals(stringArray[i], item)) {
-                index = i;
+        if (item == null) {
+            throw new IllegalArgumentException("Нельзя добавить null");
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (stringArray[i].equals(item)) {
+                return i;
             }
         }
-        return index;
+        return -1;
     }
 
     @Override
     public int lastIndexOf(String item) {
-        int index = -1;
-        for (int i = stringArray.length - 1; i >= 0; i--) {
-            if (Objects.equals(stringArray[i], item)) {
-                index = i;
+        if (item == null) {
+            throw new IllegalArgumentException("Нельзя добавить null");
+        }
+
+        for (int i = size - 1; i >= 0; i--) {
+            if(stringArray[i].equals(item)){
+                return i;
             }
         }
-        return index;
+        return -1;
     }
 
     @Override
     public String get(int index) {
-        if (index > stringArray.length) {
-            throw new OutOfRangeException("Выход за пределы массива");
+        if (index < 0 || index >= size) {
+            throw new OutOfRangeException("Индекс вне диапазона");
         }
+
         return stringArray[index];
     }
 
     @Override
     public boolean equals(StringList otherList) {
-        return false;
+        if (otherList == null) {
+            throw new IllegalArgumentException("Нельзя добавить null");
+        }
+        if (size != otherList.size()) {
+            throw new ArithmeticException("Размеры массивов отличаются");
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (!stringArray[i].equals(otherList.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public int size() {
-        int size = 0;
-        for (String s : stringArray) {
-            if (s != null) {
-                size++;
-            }
-        }
         return size;
     }
 
     @Override
     public boolean isEmpty() {
-
+        return stringArray[0] == null;
     }
 
     @Override
     public void clear() {
-
+        for (int i = 0; i < size; i++) {
+            stringArray[i] = null;
+        }
+        size = 0;
     }
 
     @Override
     public String[] toArray() {
-        return new String[0];
+        return Arrays.copyOf(stringArray, size);
     }
 
 }
