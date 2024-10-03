@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class StringListImpl implements StringList {
 
-    private String[] stringArray;
+    private final String[] stringArray;
 
     private int size;
 
@@ -21,12 +21,8 @@ public class StringListImpl implements StringList {
 
     @Override
     public String add(String item) {
-        if (item == null) {
-            throw new IllegalArgumentException("Нельзя добавить null");
-        }
-        if (size == stringArray.length) {
-            throw new FullListException("Лист полностью заполнен");
-        }
+        checkNullElement(item);
+        checkListIsFulled();
 
         stringArray[size] = item;
         size++;
@@ -35,20 +31,15 @@ public class StringListImpl implements StringList {
 
     @Override
     public String add(int index, String item) {
+        checkNullElement(item);
+        checkListIsFulled();
         if (index < 0 || index > size) {
             throw new OutOfRangeException("Индекс вне диапазона");
         }
-        if (item == null) {
-            throw new IllegalArgumentException("Нельзя добавить null");
-        }
-        if (size == stringArray.length) {
-            throw new FullListException("Лист полностью заполнен");
-        }
 
-        for (int i = size; i > index; i--) {
+        for (int i = size; i > index; i--) {//todo заменить на arraycopy
             stringArray[i] = stringArray[i - 1];
         }
-
         stringArray[index] = item;
         size++;
         return item;
@@ -56,11 +47,9 @@ public class StringListImpl implements StringList {
 
     @Override
     public String set(int index, String item) {
+        checkNullElement(item);
         if (index < 0 || index >= size) {
             throw new OutOfRangeException("Индекс вне диапазона");
-        }
-        if (item == null) {
-            throw new IllegalArgumentException("Нельзя добавить null");
         }
 
         String oldItem = stringArray[index];
@@ -70,9 +59,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public String remove(String item) {
-        if (item == null) {
-            throw new IllegalArgumentException("Нельзя добавить null");
-        }
+        checkNullElement(item);
 
         int index = indexOf(item);
         if (index == -1) {
@@ -88,7 +75,7 @@ public class StringListImpl implements StringList {
         }
 
         String removedItem = stringArray[index];
-        for (int i = size; i > index; i--) {
+        for (int i = size; i > index; i--) {//todo заменить на arraycopy
             stringArray[i] = stringArray[i - 1];
         }
         size--;
@@ -103,9 +90,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public int indexOf(String item) {
-        if (item == null) {
-            throw new IllegalArgumentException("Нельзя добавить null");
-        }
+        checkNullElement(item);
 
         for (int i = 0; i < size; i++) {
             if (stringArray[i].equals(item)) {
@@ -117,12 +102,10 @@ public class StringListImpl implements StringList {
 
     @Override
     public int lastIndexOf(String item) {
-        if (item == null) {
-            throw new IllegalArgumentException("Нельзя добавить null");
-        }
+        checkNullElement(item);
 
         for (int i = size - 1; i >= 0; i--) {
-            if(stringArray[i].equals(item)){
+            if (stringArray[i].equals(item)) {
                 return i;
             }
         }
@@ -176,6 +159,18 @@ public class StringListImpl implements StringList {
     @Override
     public String[] toArray() {
         return Arrays.copyOf(stringArray, size);
+    }
+
+    private void checkNullElement(String item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Нельзя добавить null");
+        }
+    }
+
+    private void checkListIsFulled() {
+        if (size == stringArray.length) {
+            throw new FullListException("Лист полностью заполнен");
+        }
     }
 
 }
